@@ -98,9 +98,9 @@ export class AppComponent implements AfterViewInit {
       this._nameCount++;
     }
     if (this.isAutoAdvanceEnabled) { // Advance to next well and give the reaction time input keyboard focus
-      this.currentWell = (this.currentWell >= 95) ? 0 : this.currentWell + 1;
-      this.selectedCol = this.cols[this.currentWell % this.cols.length];
-      this.selectedRow = this.rows[Math.floor(this.currentWell / this.rows.length)];
+      var desWell = (this.currentWell >= 95) ? 0 : this.currentWell + 1;
+      this.selectedCol = this.cols[desWell % this.cols.length];
+      this.selectedRow = this.rows[Math.floor(desWell / this.cols.length)];
       this.setSelectedWell();
       this.reactionTime.nativeElement.focus();
     }
