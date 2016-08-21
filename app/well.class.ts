@@ -4,7 +4,7 @@ export class Well {
     isTainted: boolean = false;
     locationName: string = "";
     sampleName: string = "";
-    reactionTime: number = 5.0;
+    reactionTime: number = undefined;
     uid: string = "";
 
     public Well() { }

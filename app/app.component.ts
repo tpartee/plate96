@@ -18,7 +18,7 @@ import { Well } from './well.class';
           <option *ngFor="let col of cols" [value]="col">{{col}}</option>
         </select>
         <label for="reactionTime">Reaction Time</label>
-        <input type="text" #reactionTime name="reactionTime" [(ngModel)]="wells[currentWell].reactionTime" class="form-control" pattern="[0-9]{1,2}" />
+        <input type="text" #reactionTime name="reactionTime" [(ngModel)]="wells[currentWell].reactionTime" class="form-control" pattern="[0-9]{1,2}" placeholder="Minutes (5-90)" style="width:120px;" />
         <label for="sampleName">Sample Name</label>
         <input type="text" #sampleName name="sampleName" [(ngModel)]="wells[currentWell].sampleName" class="form-control" maxlength="64" />
         <button (click)="addClick($event)" class="btn btn-success">Add</button>
@@ -52,8 +52,8 @@ export class AppComponent implements AfterViewInit {
   isAutoAdvanceEnabled: boolean = false;
   private _nameCount: number = 0;
   private _nameHash: { [id: string] : number } = {};
-  private _fillColors: string[] = ['#8888ff','#88ff88','#ff8888'];
-  private _strokeColors: string[] = ['#6666ee','#66ee66','#ee6666'];
+  private _fillColors: string[] = [];
+  private _strokeColors: string[] = [];
 
   @ViewChild("wellCanvas") wellCanvas;
   @ViewChild("reactionTime") reactionTime;
@@ -70,6 +70,20 @@ export class AppComponent implements AfterViewInit {
     // Map the rows strings into a reverse-lookup hash to speed things up
     for (var idx=0; idx < this.rows.length; idx++) {
       this._rowHash[this.rows[idx]] = idx;
+    }
+    // Create a color index large enough to accommodate all 96 wells having different sample names
+    var colorIndex = 0;
+    var hexCheatsFills   = ['f','d','b','9','7'];
+    var hexCheatsStrokes = ['e','c','a','8','6'];
+    for (var ir=0; ir<5; ir++) {
+      for (var ig=0; ig<5; ig++) {
+        for (var ib=0; ib<5; ib++) {
+          if (ir === ig && ir === ib) continue; // Skip greys
+          this._fillColors[colorIndex]   = "#" + hexCheatsFills[ir]   + "0" + hexCheatsFills[ig]   + "0" + hexCheatsFills[ib]   + "0";
+          this._strokeColors[colorIndex] = "#" + hexCheatsStrokes[ir] + "0" + hexCheatsStrokes[ig] + "0" + hexCheatsStrokes[ib] + "0";
+          colorIndex++;
+        }
+      }
     }
   }
 
@@ -181,8 +195,15 @@ export class AppComponent implements AfterViewInit {
     // Do the rendering of each well
     ctx.font = '12px sans-serif';
     for (var idx=0; idx < 96; idx++) {
-      var cenx = this._offsetx + ((idx % this.cols.length) * this._optdim) + this._optdim / 2;
-      var ceny = this._offsety + (Math.floor(idx / this.cols.length) * this._optdim) + this._optdim / 2;
+      var orgx = this._offsetx + ((idx % this.cols.length) * this._optdim);
+      var orgy = this._offsety + (Math.floor(idx / this.cols.length) * this._optdim);
+      var cenx = orgx + this._optdim / 2;
+      var ceny = orgy + this._optdim / 2;
+      // Render a slight highlight rectangle underlay if this is the current well
+      if (idx === this.currentWell) {
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(orgx, orgy, this._optdim, this._optdim);
+      }
       if (this.wells[idx].isComplete) { // For completed wells to render arcs and colors
         // Render the outer 'reaction time' circle first as the well will be rendered atop it to fake the arc look
         var arcBeg = 0;
@@ -199,10 +220,10 @@ export class AppComponent implements AfterViewInit {
         // Now render the well itself 
         ctx.beginPath();
         ctx.arc(cenx, ceny, this._optdim * 0.35, 0, 2 * Math.PI, false);
-        ctx.fillStyle = this._fillColors[this._nameHash[this.wells[idx].sampleName] % 3];
+        ctx.fillStyle = this._fillColors[this._nameHash[this.wells[idx].sampleName] % this._strokeColors.length];
         ctx.fill();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = this._strokeColors[this._nameHash[this.wells[idx].sampleName] % 3];
+        ctx.strokeStyle = this._strokeColors[this._nameHash[this.wells[idx].sampleName] % this._strokeColors.length];
         ctx.stroke();
       } else { // For incomplete wells, just render a plain grey circle
         ctx.beginPath();
