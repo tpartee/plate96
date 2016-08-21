@@ -7,6 +7,7 @@ import { Well } from './well.class';
   selector: 'plate96',
   template: `
   <div>
+    <h2>96-Well PCR Plate Tool Demo</h2>
     <div>
       <form class="form-inline">
         <div>
@@ -33,6 +34,7 @@ import { Well } from './well.class';
     <div>
       <canvas #wellCanvas width="800" height="560" style="background:white;border:2px solid darkgray;" (click)="canvasClick($event)"></canvas>
     </div>
+    <footer>&copy; 2016 Timothy Partee - Released under MIT License - Source: <a href="https://github.com/tpartee/plate96" target="_blank">GitHub</a></footer>
   </div>
   `
 })
@@ -71,7 +73,7 @@ export class AppComponent implements AfterViewInit {
     for (var idx=0; idx < this.rows.length; idx++) {
       this._rowHash[this.rows[idx]] = idx;
     }
-    // Create a color index large enough to accommodate all 96 wells having different sample names
+    // Create a color index large enough to accommodate all 96 wells having different sample names (5 ^ 3 = 125 - 5 greys = 120 colors)
     var colorIndex = 0;
     var hexCheatsFills   = ['f','d','b','9','7'];
     var hexCheatsStrokes = ['e','c','a','8','6'];
